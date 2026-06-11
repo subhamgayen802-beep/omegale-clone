@@ -29,12 +29,11 @@ const register = async (req,res)=>{
     }
     
     
-    res.cookie("token", token, {
-       httpOnly: true, 
-       sameSite: "lax",
-       secure: false,
-       maxAge: 60*60*1000
-     });
+   res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",  // true on Render
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+});
      res.status(201).json({
         user:reply,
 
@@ -76,11 +75,10 @@ const login = async (req, res) => {
     );
 
     res.cookie("token", token, {
-        httpOnly: true, 
-        sameSite: "lax",
-        secure: false,
-        maxAge: 60*60*1000
-    });
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",  // true on Render
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+});
 
     res.status(200).json({ 
       user: reply,
