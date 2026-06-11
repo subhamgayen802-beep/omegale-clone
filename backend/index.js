@@ -33,9 +33,9 @@ app.use(cookieParser());
 
 app.use(rateLimiter);
 
-app.use("/api",userRoutes);
+app.use(userRoutes);
 
-app.use("/api/admin",adminRoutes)
+app.use("/admin",adminRoutes)
 
 app.get("/", (req, res) => {
   res.send("Server running");

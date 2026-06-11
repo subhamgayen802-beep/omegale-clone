@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://omegale-clone.onrender.com/api",
+  baseURL: "https://omegale-clone.onrender.com"|| "http://localhost:5000",
   withCredentials: true
 });
 
