@@ -48,7 +48,7 @@ export default function HomePage() {
   }, []);
 
   const handleConnect = useCallback(() => {
-    // ✅ localStorage এর বদলে Redux isAuthenticated ব্যবহার করো
+
     if (!isAuthenticated) { navigate("/login"); return; }
     if (socketRef.current?.connected) return;
 

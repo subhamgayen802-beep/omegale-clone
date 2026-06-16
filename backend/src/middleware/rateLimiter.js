@@ -2,7 +2,7 @@ const redisClient = require("../config/redis");
 const crypto = require("crypto")
 
 const windowSize = 60; 
-const maxRequest = 100;   
+const maxRequest = 40;   
 
 const rateLimiter = async (req, res, next) => {
   try {

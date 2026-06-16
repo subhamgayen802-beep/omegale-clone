@@ -12,12 +12,11 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
 
   const peerRef        = useRef(null);
   const localStreamRef = useRef(null);
-  const iceServersRef  = useRef(FALLBACK_ICE); // buildPeer সবসময় latest config পাবে
+  const iceServersRef  = useRef(FALLBACK_ICE);
 
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
   useEffect(() => { iceServersRef.current  = iceServers;  }, [iceServers]);
 
-  // Backend থেকে ICE servers fetch করো
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/ice-servers`)
       .then((r) => r.json())
@@ -31,7 +30,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
       });
   }, []);
 
-  // Cleanup on unmount
+ 
   useEffect(() => {
     return () => {
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -40,9 +39,23 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
 
   const startMedia = useCallback(async () => {
     if (localStreamRef.current) return localStreamRef.current;
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width:      { ideal: 1280 },
+        height:     { ideal: 720  },
+        frameRate:  { ideal: 30   },
+        facingMode: "user",
+      },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate:       44100,
+      },
+    });
+
     setLocalStream(stream);
-    console.log("🎥 Local stream ready");
+    console.log("🎥 Local stream ready (HD)");
     return stream;
   }, []);
 
@@ -58,14 +71,21 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
     setRemoteStream(null);
   }, []);
 
+ 
   const buildPeer = useCallback((onIceCandidate) => {
-    // iceServersRef থেকে latest config নাও — state এর উপর depend না করে
     const peer = new RTCPeerConnection({ iceServers: iceServersRef.current });
     peerRef.current = peer;
 
-    localStreamRef.current?.getTracks().forEach((track) =>
-      peer.addTrack(track, localStreamRef.current)
-    );
+    localStreamRef.current?.getTracks().forEach((track) => {
+      const sender = peer.addTrack(track, localStreamRef.current);
+
+      if (track.kind === "video") {
+        const params = sender.getParameters();
+        if (!params.encodings) params.encodings = [{}];
+        params.encodings[0].maxBitrate = 2_000_000;
+        sender.setParameters(params).catch(() => {});
+      }
+    });
 
     peer.ontrack = (e) => {
       console.log("📺 Remote stream received");
