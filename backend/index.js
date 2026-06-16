@@ -23,6 +23,17 @@ app.use(express.urlencoded({
 
 app.use(cookieParser());
 
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(rateLimiter);
 
 app.use("/api",userRoutes);
@@ -35,17 +46,6 @@ const ALLOWED_ORIGINS = [
   "https://project-3.vercel.app",  // তোমার ৩ নম্বর project
   "http://localhost:5173",
 ];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);   // ✅ শুধু এই ৪টা allow
-    } else {
-      callback(new Error("Not allowed by CORS")); // ❌ বাকি সব block
-    }
-  },
-  credentials: true,
-}));
 
 const server = http.createServer(app);
 
