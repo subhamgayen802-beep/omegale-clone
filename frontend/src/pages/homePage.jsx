@@ -7,8 +7,8 @@ import VideoCallView from "./videoCall";
 import { useWebRTC } from "../webrtc";
 import React from "react";
 
-
-const SOCKET_URL =process.env.VITE_API_URL;
+// ✅ process.env এর বদলে import.meta.env
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 const STATUS_META = {
   idle:         { label: "Offline",          dot: "bg-zinc-600" },
@@ -80,14 +80,13 @@ export default function HomePage() {
     setSocket(s);
   }, [navigate]);
 
- 
   const handleFindPartner = useCallback(async () => {
     if (!socketRef.current?.connected) return;
     if (!["connected", "partner_left"].includes(status)) return;
 
     setMediaError(null);
     try {
-      await startMedia(); // camera/mic permission asked HERE, not on mount
+      await startMedia();
       socketRef.current.emit("find-partner", { userId: user?._id });
       setStatus("searching");
     } catch (err) {
@@ -95,7 +94,6 @@ export default function HomePage() {
       setMediaError("Camera or microphone access was denied. Allow permissions and try again.");
     }
   }, [status, user, startMedia]);
-
 
   const handleDisconnect = useCallback(() => {
     stopMedia();
@@ -112,7 +110,6 @@ export default function HomePage() {
     navigate("/login");
   }, [handleDisconnect, dispatch, navigate]);
 
- 
   if (status === "inCall") {
     return (
       <VideoCallView
@@ -134,10 +131,8 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#07070A] flex items-center justify-center relative overflow-hidden text-[#E4E4E7]">
 
       <div className="absolute inset-0 pointer-events-none">
-
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-       
         <div className="absolute top-[-100px] left-[30%] w-[500px] h-[400px] rounded-full bg-violet-950/30 blur-[100px]" />
         <div className="absolute bottom-[-80px] right-[20%] w-[400px] h-[300px] rounded-full bg-emerald-950/25 blur-[100px]" />
       </div>
@@ -145,7 +140,6 @@ export default function HomePage() {
       <div className="relative z-10 w-full max-w-[360px] px-5 flex flex-col items-center gap-5">
 
         <div className="flex flex-col items-center gap-2.5 mb-1">
- 
           <div className="w-14 h-14 rounded-[18px] bg-[#111116] border border-violet-500/20 shadow-[0_0_40px_rgba(139,92,246,0.2),inset_0_1px_0_rgba(255,255,255,0.05)] flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <defs>
@@ -177,10 +171,7 @@ export default function HomePage() {
 
           <div className="p-6 flex flex-col gap-5">
 
-        
             <div className="flex items-center gap-3 pb-4 border-b border-[#1C1C24]">
-
-           
               <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm text-white
                 bg-gradient-to-br from-violet-600/50 to-violet-900/30
                 border border-violet-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
@@ -200,12 +191,12 @@ export default function HomePage() {
 
               <div className="flex items-center gap-1.5">
                 {user?.role === "admin" && (
-                  <button onClick={() => navigate("/admin")}
+                  <button type="button" onClick={() => navigate("/admin")}
                     className="px-2 py-1 rounded-lg bg-transparent border border-zinc-700/50 text-zinc-400 text-[11px] font-mono hover:bg-zinc-800/60 hover:text-zinc-200 hover:border-zinc-600 transition-all duration-150">
                     ADMIN
                   </button>
                 )}
-                <button onClick={handleLogout}
+                <button type="button" onClick={handleLogout}
                   className="px-2 py-1 rounded-lg bg-transparent border border-zinc-800/80 text-zinc-600 text-[11px] font-mono hover:text-zinc-300 hover:border-zinc-600 transition-all duration-150">
                   EXIT
                 </button>
@@ -256,7 +247,6 @@ export default function HomePage() {
 
               {status === "searching" && (
                 <div className="flex flex-col items-center gap-3 text-center">
-                  {/* Sonar rings */}
                   <div className="relative flex items-center justify-center w-16 h-16">
                     <span className="sonar-r1 absolute inset-0 rounded-full border border-violet-500/40" />
                     <span className="sonar-r2 absolute inset-1.5 rounded-full border border-violet-400/25" />
@@ -308,7 +298,7 @@ export default function HomePage() {
 
             <div className="flex gap-2">
               {["idle", "error"].includes(status) ? (
-                <button onClick={handleConnect}
+                <button type="button" onClick={handleConnect}
                   className="flex-1 py-3 rounded-xl font-bold text-sm text-black
                     bg-white hover:bg-zinc-100 active:bg-zinc-200
                     shadow-[0_1px_0_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)]
@@ -317,7 +307,7 @@ export default function HomePage() {
                   Connect
                 </button>
               ) : (
-                <button onClick={handleDisconnect}
+                <button type="button" onClick={handleDisconnect}
                   className="flex-1 py-3 rounded-xl font-bold text-sm text-rose-400
                     bg-rose-500/[0.07] border border-rose-500/20
                     hover:bg-rose-500/15 hover:border-rose-500/30
@@ -329,7 +319,7 @@ export default function HomePage() {
               )}
 
               {["connected", "partner_left"].includes(status) && (
-                <button onClick={handleFindPartner}
+                <button type="button" onClick={handleFindPartner}
                   className="flex-1 py-3 rounded-xl font-bold text-sm text-white
                     bg-violet-600 hover:bg-violet-500 active:bg-violet-700
                     shadow-[0_0_24px_rgba(139,92,246,0.30),0_1px_0_rgba(0,0,0,0.4)]
@@ -339,9 +329,8 @@ export default function HomePage() {
                 </button>
               )}
 
-          
               {status === "searching" && (
-                <button onClick={handleDisconnect}
+                <button type="button" onClick={handleDisconnect}
                   className="flex-1 py-3 rounded-xl font-bold text-sm text-zinc-500
                     border border-[#1C1C24]
                     hover:text-zinc-300 hover:border-zinc-700 hover:bg-white/[0.02]
