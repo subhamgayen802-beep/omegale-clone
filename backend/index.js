@@ -41,7 +41,7 @@ app.use(cookieParser());
 app.use(rateLimiter);
 
 app.use("/api", userRoutes);
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 const server = http.createServer(app);
 

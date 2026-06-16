@@ -152,10 +152,10 @@ export default function HomePage() {
           <div className="text-center">
             <h1 className="text-[22px] font-bold text-white tracking-tight leading-tight"
               style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-              Random Chat
+              Omegale 
             </h1>
             <p className="text-zinc-600 text-[11px] tracking-widest font-mono uppercase mt-0.5">
-              Anonymous · P2P · Encrypted
+              Anonymous · P2P 
             </p>
           </div>
         </div>
