@@ -26,25 +26,25 @@ const closeRoom = (io, roomId) => {
     if (s) { s.roomId = null; s.leave(roomId); }
   }
   rooms.delete(roomId);
-  console.log(`🗑️  Room closed: ${roomId}`);
+  console.log(` Room closed: ${roomId}`);
 };
 
 const requeue = (socket, userId) => {
   waitingUsers.set(socket.id, { socketId: socket.id, userId });
   socket.emit("waiting");
-  console.log(`⏳ ${socket.id} re-queued (size: ${waitingUsers.size})`);
+  console.log(` ${socket.id} re-queued (size: ${waitingUsers.size})`);
 };
 
 
 module.exports = (io) => {
   io.on("connection", (socket) => {
-    console.log(`🔌 Connected: ${socket.id} (user: ${socket.user?._id ?? "anon"})`);
+    console.log(` Connected: ${socket.id} (user: ${socket.user?._id ?? "anon"})`);
 
     socket.on("find-partner", (data) => {
       const userId = data?.userId ?? socket.user?._id;
 
       if (findRoomOf(socket.id)) {
-        console.log(`⚠️  ${socket.id} already in a room — ignoring`);
+        console.log(`  ${socket.id} already in a room — ignoring`);
         return;
       }
 
@@ -57,7 +57,7 @@ module.exports = (io) => {
         const partnerSocket = io.sockets.sockets.get(partnerEntry.socketId);
 
         if (!partnerSocket?.connected) {
-          console.log(`⚠️  Queued partner ${partnerId} gone — re-queuing`);
+          console.log(`  Queued partner ${partnerId} gone — re-queuing`);
           requeue(socket, userId);
           return;
         }
@@ -77,7 +77,7 @@ module.exports = (io) => {
         partnerSocket.emit("partner-found", { roomId, initiator: true });
         socket.emit("partner-found",        { roomId, initiator: false });
 
-        console.log(`✅ Room: ${roomId}  initiator=${partnerEntry.socketId}  responder=${socket.id}`);
+        console.log(` Room: ${roomId}  initiator=${partnerEntry.socketId}  responder=${socket.id}`);
 
       } else {
         requeue(socket, userId);
@@ -114,7 +114,7 @@ module.exports = (io) => {
     });
 
     socket.on("disconnect", (reason) => {
-      console.log(`❌ Disconnected: ${socket.id} (${reason})`);
+      console.log(`Disconnected: ${socket.id} (${reason})`);
       waitingUsers.delete(socket.id);
 
       const roomId = socket.roomId;

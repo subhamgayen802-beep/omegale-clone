@@ -28,12 +28,12 @@ const register = async (req,res)=>{
         role:user.role,
     }
     
-    
-   res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",  // true on Render
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
-});
+      res.cookie("token", token, {
+       httpOnly:true,
+       sameSite:"none",
+       secure:true,
+     });
+
      res.status(201).json({
         user:reply,
 
@@ -74,12 +74,12 @@ const login = async (req, res) => {
       { expiresIn: 60 * 60 }
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",  // true on Render
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
-});
-
+       res.cookie("token", token, {
+       httpOnly:true,
+       sameSite:"none",
+       secure:true,
+     });
+     
     res.status(200).json({ 
       user: reply,
       message: "Logged in Successfully"
@@ -111,7 +111,31 @@ const logout = async(req,res)=>{
     }
 }
 
+const check = async(req,res)=>{
+
+    const reply = {
+        firstName: req.result.firstName,
+        emailId: req.result.emailId,
+        _id:req.result._id,
+        role:req.result.role,
+    }
+
+    res.status(200).json({
+        user:reply,
+        message:"Valid User"
+    });
+}
+
+const ICE_servers = async(req, res) => {
+  res.json([
+    { urls: "stun:global.stun.twilio.com:3478" },
+    {
+      urls: "turn:global.turn.twilio.com:3478?transport=udp",
+      username:   process.env.TURN_USERNAME,
+      credential: process.env.TURN_CREDENTIAL,
+    },
+  ]);
+}
 
 
-
-module.exports = {register, login,logout};
+module.exports = {register, login,logout,check, ICE_servers};

@@ -38,7 +38,7 @@ function Signup() {
     dispatch(registerUser(data));
   };
 
-  /* ── Lamp helpers ── */
+
   const movePupils = (dx, dy) => {
     if (pupilL.current) pupilL.current.style.transform = `translate(${dx}px, ${dy}px)`;
     if (pupilR.current) pupilR.current.style.transform = `translate(${dx}px, ${dy}px)`;
@@ -64,7 +64,7 @@ function Signup() {
     setTimeout(() => movePupils(0, 0), 500);
   };
 
-  /* Compose RHF register with our focus handlers */
+
   const firstNameProps = register('firstName');
   const emailProps = register('emailId');
   const passwordProps = register('password');

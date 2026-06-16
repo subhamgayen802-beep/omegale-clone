@@ -7,7 +7,8 @@ import VideoCallView from "./videoCall";
 import { useWebRTC } from "../webrtc";
 import React from "react";
 
-const SOCKET_URL = "https://omegale-clone.onrender.com" || "http://localhost:5000";
+
+const SOCKET_URL =process.env.SOCKET_URL;
 
 const STATUS_META = {
   idle:         { label: "Offline",          dot: "bg-zinc-600" },
@@ -86,7 +87,7 @@ export default function HomePage() {
 
     setMediaError(null);
     try {
-      await startMedia(); // 🔑 camera/mic permission asked HERE, not on mount
+      await startMedia(); // camera/mic permission asked HERE, not on mount
       socketRef.current.emit("find-partner", { userId: user?._id });
       setStatus("searching");
     } catch (err) {
