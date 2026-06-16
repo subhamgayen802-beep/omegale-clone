@@ -7,7 +7,6 @@ import VideoCallView from "./videoCall";
 import { useWebRTC } from "../webrtc";
 import React from "react";
 
-// ✅ process.env এর বদলে import.meta.env
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 const STATUS_META = {
@@ -49,8 +48,8 @@ export default function HomePage() {
   }, []);
 
   const handleConnect = useCallback(() => {
-    const token = localStorage.getItem("token");
-    if (!token) { navigate("/login"); return; }
+    // ✅ localStorage এর বদলে Redux isAuthenticated ব্যবহার করো
+    if (!isAuthenticated) { navigate("/login"); return; }
     if (socketRef.current?.connected) return;
 
     setStatus("connecting");
@@ -65,8 +64,6 @@ export default function HomePage() {
     s.on("connect_error", (err) => {
       const isAuth = err.message.includes("expired") || err.message.toLowerCase().includes("token");
       if (isAuth) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
         navigate("/login");
       } else {
         setStatus("error");
@@ -78,7 +75,7 @@ export default function HomePage() {
 
     socketRef.current = s;
     setSocket(s);
-  }, [navigate]);
+  }, [navigate, isAuthenticated]);
 
   const handleFindPartner = useCallback(async () => {
     if (!socketRef.current?.connected) return;
@@ -129,7 +126,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#07070A] flex items-center justify-center relative overflow-hidden text-[#E4E4E7]">
-
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
@@ -138,7 +134,6 @@ export default function HomePage() {
       </div>
 
       <div className="relative z-10 w-full max-w-[360px] px-5 flex flex-col items-center gap-5">
-
         <div className="flex flex-col items-center gap-2.5 mb-1">
           <div className="w-14 h-14 rounded-[18px] bg-[#111116] border border-violet-500/20 shadow-[0_0_40px_rgba(139,92,246,0.2),inset_0_1px_0_rgba(255,255,255,0.05)] flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#logoGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -166,18 +161,14 @@ export default function HomePage() {
         </div>
 
         <div className="w-full bg-[#0E0E12] border border-[#1C1C24] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(139,92,246,0.05),0_24px_48px_rgba(0,0,0,0.5)]">
-
           <div className="h-[1px] bg-gradient-to-r from-transparent via-violet-500/30 to-transparent" />
-
           <div className="p-6 flex flex-col gap-5">
-
             <div className="flex items-center gap-3 pb-4 border-b border-[#1C1C24]">
               <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center font-bold text-sm text-white
                 bg-gradient-to-br from-violet-600/50 to-violet-900/30
                 border border-violet-500/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 {user?.firstName?.[0]?.toUpperCase() ?? "?"}
               </div>
-
               <div className="flex-1 min-w-0">
                 <p className="text-zinc-100 font-semibold text-[13px] truncate"
                   style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
@@ -188,7 +179,6 @@ export default function HomePage() {
                   <span className="text-zinc-600 text-[11px] font-mono">{statusLabel}</span>
                 </div>
               </div>
-
               <div className="flex items-center gap-1.5">
                 {user?.role === "admin" && (
                   <button type="button" onClick={() => navigate("/admin")}
@@ -204,22 +194,13 @@ export default function HomePage() {
             </div>
 
             <div className="min-h-[155px] flex items-center justify-center bg-[#09090D] border border-[#181820] rounded-xl p-5">
-
               {status === "idle" && (
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#111116] border border-zinc-800/60 flex items-center justify-center text-2xl mb-1">
-                    🛰️
-                  </div>
-                  <p className="text-zinc-200 font-semibold text-sm"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                    Not Connected
-                  </p>
-                  <p className="text-zinc-600 text-[11px] leading-relaxed max-w-[180px] font-mono">
-                    Connect to the signal network to get started
-                  </p>
+                  <div className="w-12 h-12 rounded-full bg-[#111116] border border-zinc-800/60 flex items-center justify-center text-2xl mb-1">🛰️</div>
+                  <p className="text-zinc-200 font-semibold text-sm" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>Not Connected</p>
+                  <p className="text-zinc-600 text-[11px] leading-relaxed max-w-[180px] font-mono">Connect to the signal network to get started</p>
                 </div>
               )}
-
               {status === "connecting" && (
                 <div className="flex flex-col items-center gap-3">
                   <div className="relative w-10 h-10 flex items-center justify-center">
@@ -230,21 +211,16 @@ export default function HomePage() {
                   <p className="text-zinc-500 text-[11px] font-mono tracking-[0.2em]">ESTABLISHING CONNECTION</p>
                 </div>
               )}
-
               {status === "connected" && (
                 <div className="flex flex-col items-center gap-2.5 text-center">
                   <div className="relative w-8 h-8 flex items-center justify-center mb-1">
                     <span className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" style={{ animationDuration: "2.5s" }} />
                     <span className="relative w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.6)]" />
                   </div>
-                  <p className="text-zinc-100 font-semibold text-sm"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                    Network Ready
-                  </p>
+                  <p className="text-zinc-100 font-semibold text-sm" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>Network Ready</p>
                   <p className="text-zinc-600 text-[11px] font-mono">Find a partner to begin</p>
                 </div>
               )}
-
               {status === "searching" && (
                 <div className="flex flex-col items-center gap-3 text-center">
                   <div className="relative flex items-center justify-center w-16 h-16">
@@ -257,33 +233,20 @@ export default function HomePage() {
                   <p className="text-zinc-600 text-[10px] font-mono">This may take a moment...</p>
                 </div>
               )}
-
               {status === "partner_left" && (
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl mb-1">
-                    👋
-                  </div>
-                  <p className="text-zinc-200 font-semibold text-sm"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                    Session Ended
-                  </p>
+                  <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xl mb-1">👋</div>
+                  <p className="text-zinc-200 font-semibold text-sm" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>Session Ended</p>
                   <p className="text-zinc-600 text-[11px] font-mono">Your partner disconnected</p>
                 </div>
               )}
-
               {status === "error" && (
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl mb-1">
-                    ⚠️
-                  </div>
-                  <p className="text-rose-400 font-semibold text-sm"
-                    style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                    Signal Error
-                  </p>
+                  <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-xl mb-1">⚠️</div>
+                  <p className="text-rose-400 font-semibold text-sm" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>Signal Error</p>
                   <p className="text-zinc-600 text-[11px] font-mono">Check network & retry</p>
                 </div>
               )}
-
             </div>
 
             {mediaError && (
@@ -299,66 +262,45 @@ export default function HomePage() {
             <div className="flex gap-2">
               {["idle", "error"].includes(status) ? (
                 <button type="button" onClick={handleConnect}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm text-black
-                    bg-white hover:bg-zinc-100 active:bg-zinc-200
-                    shadow-[0_1px_0_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)]
-                    transition-all duration-150"
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-black bg-white hover:bg-zinc-100 active:bg-zinc-200 shadow-[0_1px_0_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.1)] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   Connect
                 </button>
               ) : (
                 <button type="button" onClick={handleDisconnect}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm text-rose-400
-                    bg-rose-500/[0.07] border border-rose-500/20
-                    hover:bg-rose-500/15 hover:border-rose-500/30
-                    active:bg-rose-500/20
-                    transition-all duration-150"
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-rose-400 bg-rose-500/[0.07] border border-rose-500/20 hover:bg-rose-500/15 hover:border-rose-500/30 active:bg-rose-500/20 transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   Disconnect
                 </button>
               )}
-
               {["connected", "partner_left"].includes(status) && (
                 <button type="button" onClick={handleFindPartner}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm text-white
-                    bg-violet-600 hover:bg-violet-500 active:bg-violet-700
-                    shadow-[0_0_24px_rgba(139,92,246,0.30),0_1px_0_rgba(0,0,0,0.4)]
-                    transition-all duration-150"
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-white bg-violet-600 hover:bg-violet-500 active:bg-violet-700 shadow-[0_0_24px_rgba(139,92,246,0.30),0_1px_0_rgba(0,0,0,0.4)] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   Find Partner
                 </button>
               )}
-
               {status === "searching" && (
                 <button type="button" onClick={handleDisconnect}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm text-zinc-500
-                    border border-[#1C1C24]
-                    hover:text-zinc-300 hover:border-zinc-700 hover:bg-white/[0.02]
-                    transition-all duration-150"
+                  className="flex-1 py-3 rounded-xl font-bold text-sm text-zinc-500 border border-[#1C1C24] hover:text-zinc-300 hover:border-zinc-700 hover:bg-white/[0.02] transition-all duration-150"
                   style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   Cancel
                 </button>
               )}
-
             </div>
           </div>
-
           <div className="h-[1px] bg-gradient-to-r from-transparent via-emerald-500/15 to-transparent" />
         </div>
 
-        <p className="text-zinc-800 text-[10px] tracking-[0.25em] font-mono uppercase">
-          v1.0 · Signal Network
-        </p>
+        <p className="text-zinc-800 text-[10px] tracking-[0.25em] font-mono uppercase">v1.0 · Signal Network</p>
       </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-
         @keyframes sonar {
           0%   { transform: scale(0.7); opacity: 0.8; }
           100% { transform: scale(2.4); opacity: 0; }
         }
-
         .sonar-r1 { animation: sonar 2s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
         .sonar-r2 { animation: sonar 2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s infinite; }
         .sonar-r3 { animation: sonar 2s cubic-bezier(0.16, 1, 0.3, 1) 0.70s infinite; }
