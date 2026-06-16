@@ -1,4 +1,4 @@
-import react, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const FALLBACK_ICE = [{ urls: "stun:stun.l.google.com:19302" }];
 
@@ -12,18 +12,18 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
 
   const peerRef        = useRef(null);
   const localStreamRef = useRef(null);
-  const iceServersRef  = useRef(FALLBACK_ICE); 
+  const iceServersRef  = useRef(FALLBACK_ICE); // buildPeer সবসময় latest config পাবে
 
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
   useEffect(() => { iceServersRef.current  = iceServers;  }, [iceServers]);
 
-
+  // Backend থেকে ICE servers fetch করো
   useEffect(() => {
-    fetch("/api/ice-servers")
+    fetch(`${import.meta.env.VITE_API_URL}/ice-servers`)
       .then((r) => r.json())
       .then((servers) => {
         setIceServers(servers);
-        console.log(" ICE servers loaded from backend");
+        console.log("✅ ICE servers loaded from backend");
       })
       .catch(() => {
         console.warn("⚠️ ICE server fetch failed — using fallback STUN");
@@ -31,7 +31,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
       });
   }, []);
 
- 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
@@ -59,7 +59,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
   }, []);
 
   const buildPeer = useCallback((onIceCandidate) => {
-   
+    // iceServersRef থেকে latest config নাও — state এর উপর depend না করে
     const peer = new RTCPeerConnection({ iceServers: iceServersRef.current });
     peerRef.current = peer;
 
