@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'
 import { createRoot } from "react-dom/client";
 // import { StrictMode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import dotenv from "dotenv"
+
 
 createRoot(document.getElementById('root')).render(
   // <React.StrictMode>
