@@ -1,6 +1,16 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const FALLBACK_ICE = [{ urls: "stun:stun.l.google.com:19302" }];
+const ICE_SERVERS = [
+  { urls: "stun:global.stun.twilio.com:3478" },
+  {
+    urls: "turn:global.turn.twilio.com:3478?transport=udp",
+    username:   "9c62ac6db56ec83729d37f40bad08e21ac43f45d82e5b1ce9448298507b56ff0",
+    credential: "R9cxsrRCXGMNUCCMxRrg6J+FsrTovXGIfYXTQlczGxI=",
+  },
+];
+
+const createPeer = () => new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
 export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
 
@@ -8,44 +18,27 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
   const [remoteStream, setRemoteStream] = useState(null);
   const [isMuted,      setIsMuted]      = useState(false);
   const [isCamOff,     setIsCamOff]     = useState(false);
-  const [iceServers,   setIceServers]   = useState(FALLBACK_ICE);
 
   const peerRef        = useRef(null);
-  const localStreamRef = useRef(null);
-  const iceServersRef  = useRef(FALLBACK_ICE); // buildPeer সবসময় latest config পাবে
-
+  const localStreamRef = useRef(null); 
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
-  useEffect(() => { iceServersRef.current  = iceServers;  }, [iceServers]);
 
-  // Backend থেকে ICE servers fetch করো
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/ice-servers`)
-      .then((r) => r.json())
-      .then((servers) => {
-        setIceServers(servers);
-        console.log("✅ ICE servers loaded from backend");
-      })
-      .catch(() => {
-        console.warn("⚠️ ICE server fetch failed — using fallback STUN");
-        setIceServers(FALLBACK_ICE);
-      });
-  }, []);
-
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       localStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
+  
   const startMedia = useCallback(async () => {
-    if (localStreamRef.current) return localStreamRef.current;
+    if (localStreamRef.current) return localStreamRef.current; // already have it
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     setLocalStream(stream);
     console.log("🎥 Local stream ready");
     return stream;
   }, []);
 
+ 
   const stopMedia = useCallback(() => {
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     setLocalStream(null);
@@ -59,8 +52,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
   }, []);
 
   const buildPeer = useCallback((onIceCandidate) => {
-    // iceServersRef থেকে latest config নাও — state এর উপর depend না করে
-    const peer = new RTCPeerConnection({ iceServers: iceServersRef.current });
+    const peer = createPeer();
     peerRef.current = peer;
 
     localStreamRef.current?.getTracks().forEach((track) =>
@@ -88,6 +80,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
       setTimeout(() => { clearInterval(check); resolve(); }, 1500);
     }), []);
 
+ 
   useEffect(() => {
     if (!socket) return;
 
@@ -106,6 +99,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
       console.log("📤 Offer sent");
     };
 
+    
     const onOffer = async (offer) => {
       console.log("📥 Offer received — sending answer");
       closePeer();
@@ -119,11 +113,13 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
       console.log("📤 Answer sent");
     };
 
+    
     const onAnswer = async (answer) => {
       console.log("📥 Answer received");
       await peerRef.current?.setRemoteDescription(answer);
     };
 
+ 
     const onCandidate = async (candidate) => {
       try {
         await peerRef.current?.addIceCandidate(candidate);
@@ -157,6 +153,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
     };
   }, [socket, closePeer, buildPeer, waitForStream, onCallStart, onCallEnd]);
 
+ 
   const toggleMute = useCallback(() => {
     const track = localStreamRef.current?.getAudioTracks()[0];
     if (!track) return;
@@ -184,7 +181,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
     toggleMute,
     toggleCamera,
     nextPartner,
-    startMedia,
-    stopMedia,
+    startMedia, 
+    stopMedia,   
   };
 };

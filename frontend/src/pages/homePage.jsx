@@ -8,7 +8,7 @@ import { useWebRTC } from "../webrtc";
 import React from "react";
 
 
-const SOCKET_URL =process.env.SOCKET_URL;
+const SOCKET_URL =process.env.VITE_API_URL;
 
 const STATUS_META = {
   idle:         { label: "Offline",          dot: "bg-zinc-600" },
