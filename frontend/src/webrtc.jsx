@@ -19,7 +19,7 @@ export const useWebRTC = (socket, { onCallStart, onCallEnd } = {}) => {
 
 
   useEffect(() => {
-    fetch("/ice-servers")
+    fetch("/api/ice-servers")
       .then((r) => r.json())
       .then((servers) => {
         setIceServers(servers);

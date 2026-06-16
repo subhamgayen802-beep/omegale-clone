@@ -17,12 +17,9 @@ const app = express();
 
 const ALLOWED_ORIGINS = [
   "https://omegale-clone.vercel.app",
-  "https://project-2.vercel.app",
-  "https://project-3.vercel.app",
   "http://localhost:5173",
 ];
 
-// ✅ CORS সবার আগে
 app.use(cors({
   origin: (origin, callback) => {
     if (
