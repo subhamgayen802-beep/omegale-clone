@@ -29,16 +29,33 @@ app.use("/api",userRoutes);
 
 app.use("/admin",adminRoutes)
 
+const ALLOWED_ORIGINS = [
+  "https://omegale-clone.vercel.app",  // তোমার ১ নম্বর project
+  "https://project-2.vercel.app",  // তোমার ২ নম্বর project
+  "https://project-3.vercel.app",  // তোমার ৩ নম্বর project
+  "http://localhost:5173",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);   // ✅ শুধু এই ৪টা allow
+    } else {
+      callback(new Error("Not allowed by CORS")); // ❌ বাকি সব block
+    }
+  },
+  credentials: true,
+}));
+
 const server = http.createServer(app);
+
 
 const io = new Server(server, {
   cors: {
-    origin: "https://omegale-clone.vercel.app" || "http://localhost:5173",
-
-    credentials: true
+    origin: ALLOWED_ORIGINS,
+    credentials: true,
   },
-
-  transports: ["polling","websocket"]
+  transports: ["polling", "websocket"],
 });
 
 io.use(socketMiddleware);
